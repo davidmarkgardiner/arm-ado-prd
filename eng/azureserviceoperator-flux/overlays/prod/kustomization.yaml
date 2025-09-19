@@ -1,0 +1,80 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: aks-infrastructure-prod
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 2m
+  timeout: 15m
+  sourceRef:
+    kind: GitRepository
+    name: platform-configs
+  path: "./eng/azureserviceoperator-flux/base"
+  prune: true
+  wait: true
+
+  # Post-build variable substitution for production
+  postBuild:
+    substitute:
+      environment: "prod"
+      cluster_name: "aks-prod-eastus-001"
+      resource_group_name: "rg-aks-prod-eastus-001"
+      location: "eastus"
+      kubernetes_version: "1.29"
+      cluster_dns_prefix: "aks-prod-eastus-001k8s"
+
+      # Production node configuration
+      system_node_vm_size: "Standard_D8s_v5"
+      system_node_count: "5"
+      user_node_vm_size: "Standard_D16s_v5"
+      user_node_count: "10"
+
+      # Network configuration
+      service_cidr: "10.250.0.0/17"
+      dns_service_ip: "10.250.0.10"
+      pod_cidr: "10.250.128.0/17"
+
+      # Network profile
+      network_plugin: "azure"
+      network_plugin_mode: "overlay"
+      network_policy: "cilium"
+      network_dataplane: "cilium"
+      load_balancer_sku: "standard"
+      outbound_type: "loadBalancer"
+      ip_families: '["IPv4"]'
+
+      # Production tags
+      project: "arm-ado-migration"
+      cost_center: "engineering"
+      owner: "platform-team"
+      team: "AKSEngineering"
+      cmdb_reference: "PROD001"
+
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-variables-prod
+        optional: true
+      - kind: ConfigMap
+        name: cluster-network-variables
+        optional: true
+      - kind: Secret
+        name: cluster-secrets-prod
+        # Production secrets are mandatory
+        optional: false
+
+  # Production health checks
+  healthChecks:
+    - apiVersion: resources.azure.com/v1api20200601
+      kind: ResourceGroup
+      name: rg-aks-prod-eastus-001
+      namespace: azure-system
+    - apiVersion: containerservice.azure.com/v1api20240402preview
+      kind: ManagedCluster
+      name: aks-prod-eastus-001
+      namespace: azure-system
+
+  # Dependencies
+  dependsOn:
+    - name: azure-service-operator
+      namespace: flux-system

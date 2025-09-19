@@ -1,0 +1,40 @@
+apiVersion: managedidentity.azure.com/v1api20230131
+kind: UserAssignedIdentity
+metadata:
+  name: ${cluster_name}-control-plane-identity
+  namespace: azure-system
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  location: ${location}
+  owner:
+    name: ${resource_group_name}
+  tags:
+    environment: ${environment}
+    project: ${project}
+    costCenter: ${cost_center}
+    managedBy: flux-system
+    Owner: ${owner}
+    Team: ${team}
+    component: control-plane
+
+---
+apiVersion: managedidentity.azure.com/v1api20230131
+kind: UserAssignedIdentity
+metadata:
+  name: ${cluster_name}-kubelet-identity
+  namespace: azure-system
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  location: ${location}
+  owner:
+    name: ${resource_group_name}
+  tags:
+    environment: ${environment}
+    project: ${project}
+    costCenter: ${cost_center}
+    managedBy: flux-system
+    Owner: ${owner}
+    Team: ${team}
+    component: kubelet

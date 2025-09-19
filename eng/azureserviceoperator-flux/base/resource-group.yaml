@@ -1,0 +1,17 @@
+apiVersion: resources.azure.com/v1api20200601
+kind: ResourceGroup
+metadata:
+  name: ${resource_group_name}
+  namespace: azure-system
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  azureName: ${resource_group_name}
+  location: ${location}
+  tags:
+    environment: ${environment}
+    project: ${project}
+    costCenter: ${cost_center}
+    managedBy: flux-system
+    Owner: ${owner}
+    Team: ${team}

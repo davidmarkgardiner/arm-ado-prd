@@ -1,0 +1,201 @@
+apiVersion: containerservice.azure.com/v1api20240402preview
+kind: ManagedCluster
+metadata:
+  name: ${cluster_name}
+  namespace: azure-system
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  azureName: ${cluster_name}
+  location: ${location}
+  owner:
+    name: ${resource_group_name}
+  operatorSpec:
+    configMaps:
+      oidcIssuerProfile:
+        name: aks-oidc-config-${environment}
+        key: issuer-url
+
+  # DNS and Version Configuration
+  dnsPrefix: ${cluster_dns_prefix}
+  kubernetesVersion: "${kubernetes_version}"
+
+  # Linux Profile with SSH Key
+  linuxProfile:
+    adminUsername: localadmin
+    ssh:
+      publicKeys:
+        - keyData: ${ssh_public_key}
+
+  # Node Provisioning Profile - Auto mode (NAP)
+  nodeProvisioningProfile:
+    mode: Auto
+
+  # Identity Configuration - User Assigned
+  identity:
+    type: UserAssigned
+    userAssignedIdentities:
+      - reference:
+          armId: ${control_plane_identity_arm_id}
+
+  # AAD and RBAC Configuration
+  aadProfile:
+    enableAzureRBAC: true
+    managed: true
+    adminGroupObjectIDs:
+      - ${admin_group_object_ids}
+  enableRBAC: true
+  disableLocalAccounts: false
+
+  # Network Profile with Cilium
+  networkProfile:
+    networkPlugin: ${network_plugin}
+    networkPluginMode: ${network_plugin_mode}
+    networkPolicy: ${network_policy}
+    networkDataplane: ${network_dataplane}
+    serviceCidr: ${service_cidr}
+    dnsServiceIP: ${dns_service_ip}
+    podCidr: ${pod_cidr}
+    ipFamilies: ${ip_families}
+    loadBalancerSku: ${load_balancer_sku}
+    outboundType: ${outbound_type}
+
+  # API Server Access Profile
+  apiServerAccessProfile:
+    enablePrivateCluster: false
+    disableRunCommand: true
+
+  # Agent Pool Profile - System Pool
+  agentPoolProfiles:
+    - name: systempool
+      vnetSubnetReference:
+        armId: ${vnet_subnet_arm_id}
+      mode: System
+      count: ${system_node_count}
+      enableAutoScaling: true
+      minCount: 1
+      maxCount: 5
+      vmSize: ${system_node_vm_size}
+      availabilityZones: ["1", "2", "3"]
+      osDiskType: Managed
+      osDiskSizeGB: 128
+      osType: Linux
+      osSKU: AzureLinux
+      maxPods: 110
+      enableNodePublicIP: false
+      enableEncryptionAtHost: false
+      securityProfile:
+        enableSecureBoot: true
+        enableVTPM: true
+
+  # Identity Profile for Kubelet
+  identityProfile:
+    kubeletidentity:
+      clientId: ${kubelet_identity_client_id}
+      objectId: ${kubelet_identity_object_id}
+      resourceReference:
+        armId: ${kubelet_identity_arm_id}
+
+  # Auto Upgrade Configuration
+  autoUpgradeProfile:
+    upgradeChannel: stable
+    nodeOSUpgradeChannel: NodeImage
+
+  # Security Profile
+  securityProfile:
+    defender:
+      logAnalyticsWorkspaceResourceReference:
+        armId: ${log_analytics_workspace_arm_id}
+      securityMonitoring:
+        enabled: true
+    workloadIdentity:
+      enabled: true
+    imageCleaner:
+      enabled: true
+      intervalHours: 48
+
+  # Storage Profile
+  storageProfile:
+    diskCSIDriver:
+      enabled: true
+    fileCSIDriver:
+      enabled: true
+    snapshotController:
+      enabled: true
+
+  # Addon Profiles
+  addonProfiles:
+    azureKeyvaultSecretsProvider:
+      enabled: true
+      config:
+        enableSecretRotation: "true"
+        rotationPollInterval: "30m"
+    azurepolicy:
+      enabled: true
+      config:
+        version: "v2"
+
+  # Monitoring Profile (optional)
+  azureMonitorProfile:
+    metrics:
+      enabled: true
+      kubeStateMetrics:
+        metricLabelsAllowlist: "namespaces=[*]"
+        metricAnnotationsAllowList: "pods=[*]"
+
+  # Cluster SKU and Support
+  sku:
+    name: Base
+    tier: Standard
+  supportPlan: KubernetesOfficial
+
+  # Workload Auto Scaler with KEDA
+  workloadAutoScalerProfile:
+    keda:
+      enabled: true
+
+  # OIDC Issuer - Required for workload identity
+  oidcIssuerProfile:
+    enabled: true
+
+  # Service Mesh Profile with Istio
+  serviceMeshProfile:
+    mode: Istio
+    istio:
+      components:
+        ingressGateways:
+          - enabled: true
+            mode: Internal
+          - enabled: true
+            mode: External
+      revisions:
+        - "asm-1-25"
+
+  # Pod Identity Profile
+  podIdentityProfile:
+    enabled: false
+    userAssignedIdentityExceptions:
+      - name: k8s-control-plane-exception
+        namespace: kube-system
+        podLabels:
+          kubernetes.azure.com/managedby: aks
+      - name: ubs-control-plane-exception
+        namespace: ubs-system
+        podLabels:
+          kubernetes.azure.com/managedby: aks
+
+  # Service Principal Profile
+  servicePrincipalProfile:
+    clientId: msi
+
+  # Tags
+  tags:
+    environment: ${environment}
+    project: ${project}
+    costCenter: ${cost_center}
+    managedBy: flux-system
+    opEnvironment: ${environment:=dev}
+    cmdbReference: ${cmdb_reference}
+    Owner: ${owner}
+    Team: ${team}
+    DeployedBy: AzureServiceOperator
