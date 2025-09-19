@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASO Migration Benefits - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0078d4;
+            --secondary: #40e0d0;
+            --success: #00c853;
+            --danger: #ff5252;
+            --warning: #ffa726;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(0,120,212,0.1) 0%, rgba(64,224,208,0.1) 100%);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(64,224,208,0.3) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #00c853, #40e0d0, #0078d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(64,224,208,0.5); }
+            to { text-shadow: 0 0 20px rgba(64,224,208,0.8), 0 0 30px rgba(64,224,208,0.6); }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: rgba(255,255,255,0.9);
+            position: relative;
+            z-index: 1;
+        }
+
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(64,224,208,0.3);
+            border-color: rgba(64,224,208,0.5);
+        }
+
+        .card.current {
+            background: rgba(255,82,82,0.1);
+            border-color: rgba(255,82,82,0.3);
+        }
+
+        .card.target {
+            background: rgba(0,200,83,0.1);
+            border-color: rgba(0,200,83,0.3);
+        }
+
+        .card h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255,255,255,0.12);
+            transform: scale(1.05);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00c853, #40e0d0, #0078d4);
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00c853, #40e0d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .deployment-visual {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .deployment-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            background: #40e0d0;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(64,224,208,0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(64,224,208,0); }
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #40e0d0 0%, #0078d4 100%);
+            z-index: 1;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 4px solid #40e0d0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-list li:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateX(10px);
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: #00c853;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .code-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .code-block pre {
+            color: #d4d4d4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight-yaml {
+            color: #9cdcfe;
+        }
+
+        .highlight-key {
+            color: #4fc1ff;
+        }
+
+        .highlight-value {
+            color: #ce9178;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .interactive-demo {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .cluster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+            gap: 5px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        .cluster-dot {
+            width: 30px;
+            height: 30px;
+            background: #444;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .cluster-dot.deployed {
+            background: linear-gradient(135deg, #00c853, #40e0d0);
+            animation: deploy-pulse 0.5s ease;
+        }
+
+        @keyframes deploy-pulse {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00c853, #40e0d0, #0078d4);
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin: 10px;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #40e0d0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-section,
+            .code-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Azure Service Operator Migration</h1>
+            <p class="subtitle">Transform Infrastructure Deployment from Months to Days</p>
+        </header>
+
+        <div class="comparison-section">
+            <div class="card current">
+                <h2><span class="icon">⚠️</span> Current State: ARM Templates</h2>
+                <ul class="feature-list">
+                    <li style="border-left-color: #ff5252;">2 days per cluster deployment</li>
+                    <li style="border-left-color: #ff5252;">400+ days for 200 clusters</li>
+                    <li style="border-left-color: #ff5252;">Sequential bottleneck</li>
+                    <li style="border-left-color: #ff5252;">Manual intervention required</li>
+                    <li style="border-left-color: #ff5252;">500-1000+ lines of complex JSON</li>
+                </ul>
+            </div>
+            
+            <div class="card target">
+                <h2><span class="icon">🚀</span> Target State: ASO</h2>
+                <ul class="feature-list">
+                    <li>30 minutes for entire fleet</li>
+                    <li>Parallel deployment across all clusters</li>
+                    <li>GitOps automation</li>
+                    <li>50-100 lines of intuitive YAML</li>
+                    <li>Centralized control plane</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card" onclick="animateMetric(this)">
+                <div class="metric-value">800x</div>
+                <div class="metric-label">Faster Fleet Deployment</div>
+            </div>
+            <div class="metric-card" onclick="animateMetric(this)">
+                <div class="metric-value">Minutes</div>
+                <div class="metric-label">vs Days Per Cluster</div>
+            </div>
+            <div class="metric-card" onclick="animateMetric(this)">
+                <div class="metric-value">90%</div>
+                <div class="metric-label">Reduction in Config Complexity</div>
+            </div>
+            <div class="metric-card" onclick="animateMetric(this)">
+                <div class="metric-value">95%</div>
+                <div class="metric-label">Compliance Gap Reduction</div>
+            </div>
+        </div>
+
+        <div class="deployment-visual">
+            <h2 style="text-align: center; margin-bottom: 30px;">Deployment Timeline Comparison</h2>
+            
+            <div style="margin-bottom: 40px;">
+                <h3>ARM Template Deployment (Current)</h3>
+                <div class="deployment-timeline">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: #ff5252;"></div>
+                        <div>Start</div>
+                        <small>Day 0</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: #ffa726;"></div>
+                        <div>Dev Env</div>
+                        <small>Month 1</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: #ffa726;"></div>
+                        <div>Staging</div>
+                        <small>Month 2</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: #ff5252;"></div>
+                        <div>Production</div>
+                        <small>Month 3-6</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>ASO Deployment (Target)</h3>
+                <div class="deployment-timeline">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div>Start</div>
+                        <small>Hour 0</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div>Dev Env</div>
+                        <small>Hour 2</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div>Staging</div>
+                        <small>Day 1</small>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div>Production</div>
+                        <small>Day 2</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-comparison">
+            <div class="code-block">
+                <h3 style="color: #ff5252; margin-bottom: 15px;">❌ ARM Template (Complex)</h3>
+                <pre><span class="highlight-key">{
+  "$schema": "...",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "type": "string",
+      "metadata": {
+        "description": "..."
+      }
+    },
+    // 100+ more parameters...
+  },
+  "variables": {
+    // Complex variable definitions
+  },
+  "resources": [{
+    "type": "Microsoft.ContainerService",
+    "apiVersion": "2023-05-01",
+    "name": "[parameters('clusterName')]",
+    "location": "[parameters('location')]",
+    "properties": {
+      // 500+ lines of nested config
+    }
+  }]
+}</span></pre>
+            </div>
+            
+            <div class="code-block">
+                <h3 style="color: #00c853; margin-bottom: 15px;">✓ ASO (Simple)</h3>
+                <pre><span class="highlight-yaml">apiVersion:</span> <span class="highlight-value">containerservice.azure.com/v1</span>
+<span class="highlight-yaml">kind:</span> <span class="highlight-value">ManagedCluster</span>
+<span class="highlight-yaml">metadata:</span>
+  <span class="highlight-yaml">name:</span> <span class="highlight-value">${cluster_name}</span>
+<span class="highlight-yaml">spec:</span>
+  <span class="highlight-yaml">location:</span> <span class="highlight-value">${location}</span>
+  <span class="highlight-yaml">agentPoolProfiles:</span>
+  - <span class="highlight-yaml">name:</span> <span class="highlight-value">system</span>
+    <span class="highlight-yaml">count:</span> <span class="highlight-value">3</span>
+    <span class="highlight-yaml">vmSize:</span> <span class="highlight-value">Standard_D4s_v3</span>
+    <span class="highlight-yaml">mode:</span> <span class="highlight-value">System</span>
+  <span class="highlight-yaml">nodeProvisioningProfile:</span>
+    <span class="highlight-yaml">mode:</span> <span class="highlight-value">Auto</span></pre>
+            </div>
+        </div>
+
+        <div class="interactive-demo">
+            <h2>Interactive Deployment Simulation</h2>
+            <p style="margin: 20px 0; color: rgba(255,255,255,0.8);">
+                <strong>Real-world deployment times:</strong><br>
+                ARM: Up to 2 days per cluster × 200 clusters = 400+ days<br>
+                ASO: ~30 minutes for all 200 clusters in parallel
+            </p>
+            
+            <div class="stats-display">
+                <div class="stat-item">
+                    <div class="stat-value" id="deploymentMethod">-</div>
+                    <div class="stat-label">Deployment Method</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="clustersDeployed">0</div>
+                    <div class="stat-label">Clusters Deployed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="timeElapsed">0s</div>
+                    <div class="stat-label">Time Elapsed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="estimatedTotal">-</div>
+                    <div class="stat-label">Total Time</div>
+                </div>
+            </div>
+            
+            <div class="cluster-grid" id="clusterGrid"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            
+            <button class="btn" onclick="startArmSimulation()">Simulate ARM Deployment</button>
+            <button class="btn" onclick="startAsoSimulation()">Simulate ASO Deployment</button>
+            <button class="btn" onclick="resetSimulation()">Reset</button>
+        </div>
+
+        <div class="card" style="margin-top: 40px; text-align: center;">
+            <h2>Business Impact Summary</h2>
+            <div class="metrics-grid" style="margin-top: 30px;">
+                <div class="metric-card">
+                    <div class="metric-value" style="font-size: 1.8em;">Months → Days</div>
+                    <div class="metric-label">Deployment Timeline</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="font-size: 1.8em;">GitOps</div>
+                    <div class="metric-label">Automated Workflows</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="font-size: 1.8em;">Fleet-Wide</div>
+                    <div class="metric-label">Centralized Control</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="font-size: 1.8em;">Self-Healing</div>
+                    <div class="metric-label">Infrastructure</div>
+                </div>
+            </div>
+            
+            <p style="margin: 30px 0; font-size: 1.2em; color: rgba(255,255,255,0.9);">
+                <strong>The Strategic Question:</strong><br>
+                Not whether we can afford to make this migration,<br>
+                but whether we can afford <em>not</em> to make it.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize cluster grid
+        const clusterCount = 200;
+        const clusterGrid = document.getElementById('clusterGrid');
+        for (let i = 0; i < clusterCount; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'cluster-dot';
+            dot.id = `cluster-${i}`;
+            clusterGrid.appendChild(dot);
+        }
+
+        let simulationInterval;
+        let deployedCount = 0;
+        let startTime;
+
+        function resetSimulation() {
+            clearInterval(simulationInterval);
+            deployedCount = 0;
+            document.querySelectorAll('.cluster-dot').forEach(dot => {
+                dot.classList.remove('deployed');
+            });
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressFill').textContent = '0%';
+            document.getElementById('clustersDeployed').textContent = '0';
+            document.getElementById('timeElapsed').textContent = '0s';
+            document.getElementById('deploymentMethod').textContent = '-';
+            document.getElementById('estimatedTotal').textContent = '-';
+        }
+
+        function updateStats(method, speed) {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const progress = (deployedCount / clusterCount) * 100;
+            
+            document.getElementById('deploymentMethod').textContent = method;
+            document.getElementById('clustersDeployed').textContent = deployedCount;
+            document.getElementById('timeElapsed').textContent = `${elapsed}s (simulated)`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressFill').textContent = `${Math.floor(progress)}%`;
+            
+            if (deployedCount > 0) {
+                if (method === 'ARM (Serial)') {
+                    // ARM: Up to 2 days per cluster, 200 clusters = 400 days
+                    const daysPerCluster = 2;
+                    const totalDays = (clusterCount * daysPerCluster);
+                    const completedDays = deployedCount * daysPerCluster;
+                    document.getElementById('estimatedTotal').textContent = `~${totalDays} days (${Math.floor(totalDays/30)} months)`;
+                    document.getElementById('timeElapsed').textContent = `${completedDays} days elapsed`;
+                } else {
+                    // ASO: All clusters in minutes
+                    const totalMinutes = 30; // 30 minutes for entire fleet
+                    const minutesElapsed = (deployedCount / clusterCount) * totalMinutes;
+                    document.getElementById('estimatedTotal').textContent = `~${totalMinutes} minutes total`;
+                    document.getElementById('timeElapsed').textContent = `${Math.floor(minutesElapsed)} min elapsed`;
+                }
+            }
+        }
+
+        function startArmSimulation() {
+            resetSimulation();
+            startTime = Date.now();
+            deployedCount = 0;
+            
+            simulationInterval = setInterval(() => {
+                if (deployedCount < clusterCount) {
+                    document.getElementById(`cluster-${deployedCount}`).classList.add('deployed');
+                    deployedCount++;
+                    updateStats('ARM (Serial)', 500);
+                } else {
+                    clearInterval(simulationInterval);
+                    alert('ARM Deployment Complete!\nTime: ~400 days (13+ months)\nClusters must be deployed one at a time, each taking up to 2 days.');
+                }
+            }, 500); // Slower to emphasize the serial nature
+        }
+
+        function startAsoSimulation() {
+            resetSimulation();
+            startTime = Date.now();
+            deployedCount = 0;
+            
+            simulationInterval = setInterval(() => {
+                if (deployedCount < clusterCount) {
+                    // Deploy 20 clusters in parallel (more aggressive parallel deployment)
+                    const batchSize = Math.min(20, clusterCount - deployedCount);
+                    for (let i = 0; i < batchSize; i++) {
+                        setTimeout(() => {
+                            if (deployedCount + i < clusterCount) {
+                                document.getElementById(`cluster-${deployedCount + i}`).classList.add('deployed');
+                            }
+                        }, i * 20);
+                    }
+                    deployedCount += batchSize;
+                    updateStats('ASO (Parallel)', 50);
+                } else {
+                    clearInterval(simulationInterval);
+                    alert('ASO Deployment Complete!\nTime: ~30 minutes\nAll 200 clusters deployed in parallel!');
+                }
+            }, 50); // Very fast, massive parallel deployment
+        }
+
+        function animateMetric(element) {
+            element.style.transform = 'scale(1.1) rotate(5deg)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1.05)';
+            }, 300);
+        }
+
+        // Add floating animation to cards
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.animation = `float ${3 + index * 0.5}s ease-in-out infinite`;
+        });
+
+        // Add floating keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
