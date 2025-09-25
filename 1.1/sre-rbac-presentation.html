@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Subscription RBAC Modernization - SRE Collaboration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 1200px;
+            width: 90%;
+            min-height: 80vh;
+            display: none;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: block;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        .model-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .model-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid #e74c3c;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .current-model {
+            border-left-color: #e74c3c;
+        }
+
+        .proposed-model {
+            border-left-color: #27ae60;
+        }
+
+        .architecture-diagram {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .security-highlight {
+            background: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .question-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .question-box h4 {
+            color: #b8860b;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .highlight {
+            background: #f1c40f;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .flow-step {
+            background: #3498db;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #3498db;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .benefit-card {
+            background: #e8f8f5;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid #27ae60;
+        }
+
+        .risk-mitigation {
+            background: #fef5e7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1>Cross-Subscription RBAC Modernization</h1>
+            <div style="text-align: center; margin: 40px 0;">
+                <h2>Moving from SPN-per-Subscription to Unified UAMI</h2>
+                <p style="font-size: 1.2em; color: #7f8c8d; margin-top: 20px;">
+                    SRE Collaboration Session - Azure Service Operator Security Enhancement
+                </p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Session Objectives</h3>
+                <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+                    <li>Review current SPN-per-subscription model limitations</li>
+                    <li>Present proposed UAMI cross-subscription architecture</li>
+                    <li>Discuss security controls and access patterns</li>
+                    <li>Identify implementation requirements and risks</li>
+                    <li>Plan POC and rollout strategy together</li>
+                </ul>
+            </div>
+
+            <div class="security-highlight">
+                <strong>Key Focus:</strong> Implementing principle of least privilege while maintaining operational flexibility
+            </div>
+        </div>
+
+        <!-- Slide 2: Current State -->
+        <div class="slide">
+            <h1>Current State: SPN-per-Subscription Model</h1>
+
+            <div class="model-card current-model">
+                <h3>🔴 Current Architecture</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">SPN-A<br>SWCI-A</div>
+                    <div class="flow-step">SPN-B<br>SWCI-B</div>
+                    <div class="flow-step">SPN-C<br>SWCI-C</div>
+                </div>
+
+                <h4>Characteristics:</h4>
+                <ul>
+                    <li><span class="highlight">One SPN per SWCI/Subscription</span></li>
+                    <li>Each SPN has <strong>Contributor role</strong> access</li>
+                    <li>Deployment scope limited to subscription boundary</li>
+                    <li>Isolated resource provisioning per subscription</li>
+                </ul>
+            </div>
+
+            <h2>Current Challenges</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card" style="background: #ffebee; border-top-color: #e74c3c;">
+                    <h4>🔐 Over-Privileged Access</h4>
+                    <p>Contributor role grants excessive permissions beyond ASO requirements</p>
+                </div>
+                <div class="benefit-card" style="background: #ffebee; border-top-color: #e74c3c;">
+                    <h4>📊 Management Complexity</h4>
+                    <p>Multiple SPNs to manage, rotate, and monitor across environments</p>
+                </div>
+                <div class="benefit-card" style="background: #ffebee; border-top-color: #e74c3c;">
+                    <h4>🔍 Limited Cross-Subscription</h4>
+                    <p>Cannot efficiently manage resources that span subscriptions</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <h4>❓ SRE Input Needed</h4>
+                <ul>
+                    <li>What operational procedures currently depend on the per-subscription SPN model?</li>
+                    <li>Are there any monitoring or alerting systems tied to current SPN usage?</li>
+                    <li>What's your experience with credential rotation and management overhead?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Proposed Model -->
+        <div class="slide">
+            <h1>Proposed Model: Unified UAMI with Workload Identity</h1>
+
+            <div class="model-card proposed-model">
+                <h3>🟢 Proposed Architecture</h3>
+                <div class="architecture-diagram">
+                    <div style="margin: 20px 0;">
+                        <strong>Management Group Level</strong>
+                        <div class="flow-diagram">
+                            <div class="flow-step" style="background: #27ae60;">UAMI-Primary<br>Environment-X</div>
+                            <div class="flow-step" style="background: #27ae60;">UAMI-Backup<br>Environment-X</div>
+                        </div>
+                        <div style="margin: 10px 0;">↓ Access to all subscriptions in environment ↓</div>
+                        <div class="flow-diagram">
+                            <div class="flow-step" style="background: #3498db;">Network<br>Subscription</div>
+                            <div class="flow-step" style="background: #3498db;">Compute<br>Subscription</div>
+                            <div class="flow-step" style="background: #3498db;">Monitoring<br>Subscription</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4>Key Features:</h4>
+                <ul>
+                    <li><span class="highlight">Workload Identity Federation</span> - No stored secrets</li>
+                    <li><strong>Management Group scope</strong> assignment</li>
+                    <li>Primary + Backup UAMI for resilience</li>
+                    <li>Fine-grained custom role permissions</li>
+                </ul>
+            </div>
+
+            <div class="security-highlight">
+                <h4>🔒 Enhanced Security Controls</h4>
+                <ul>
+                    <li><strong>Management Cluster Access:</strong> Bastion + Breakglass PIM only</li>
+                    <li><strong>GitOps Deployment:</strong> All changes via locked-down Flux repository</li>
+                    <li><strong>Gatekeeper Policies:</strong> Enforce resource creation constraints</li>
+                    <li><strong>SRE Approval Workflow:</strong> Final policy sign-off through SRE team</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Security Architecture -->
+        <div class="slide">
+            <h1>Security Architecture & Access Controls</h1>
+
+            <div class="flow-diagram" style="flex-direction: column;">
+                <div class="flow-step" style="background: #e74c3c;">Developer Request</div>
+                <div class="flow-step" style="background: #f39c12;">GitOps Repository<br>(Pull Request)</div>
+                <div class="flow-step" style="background: #27ae60;">SRE Approval<br>(Policy Review)</div>
+                <div class="flow-step" style="background: #3498db;">Flux Sync to<br>Management Cluster</div>
+                <div class="flow-step" style="background: #9b59b6;">ASO Controller<br>(UAMI Authentication)</div>
+                <div class="flow-step" style="background: #34495e;">Cross-Subscription<br>Resource Deployment</div>
+            </div>
+
+            <div class="model-comparison">
+                <div class="security-highlight">
+                    <h4>🛡️ Management Cluster Protection</h4>
+                    <ul>
+                        <li><strong>Network Isolation:</strong> Private cluster with bastion access</li>
+                        <li><strong>Identity Controls:</strong> Azure AD PIM for breakglass access</li>
+                        <li><strong>Policy Enforcement:</strong> Gatekeeper constraining resource types</li>
+                        <li><strong>Audit Logging:</strong> All actions logged and monitored</li>
+                    </ul>
+                </div>
+
+                <div class="security-highlight">
+                    <h4>🔑 UAMI Security Features</h4>
+                    <ul>
+                        <li><strong>No Secrets:</strong> Workload identity federation eliminates stored credentials</li>
+                        <li><strong>Least Privilege:</strong> Custom role with minimal required permissions</li>
+                        <li><strong>Conditional Access:</strong> Additional security policies applied</li>
+                        <li><strong>Regular Reviews:</strong> Automated permission auditing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <h4>❓ Security Discussion Points</h4>
+                <ul>
+                    <li>Are these security controls sufficient for your compliance requirements?</li>
+                    <li>What additional monitoring would you want for the management cluster?</li>
+                    <li>How should we handle emergency access scenarios?</li>
+                    <li>What approval workflow would work best for policy changes?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Permission Model -->
+        <div class="slide">
+            <h1>Fine-Grained Permission Model</h1>
+
+            <div class="model-comparison">
+                <div class="model-card current-model">
+                    <h4>🔴 Current: Contributor Role</h4>
+                    <ul>
+                        <li>Broad permissions across all Azure services</li>
+                        <li>Can create, modify, delete most resources</li>
+                        <li>Over-privileged for ASO requirements</li>
+                        <li>Potential compliance issues</li>
+                    </ul>
+                </div>
+
+                <div class="model-card proposed-model">
+                    <h4>🟢 Proposed: Custom ASO Role</h4>
+                    <pre style="background: #2c3e50; color: white; padding: 15px; border-radius: 5px; font-size: 12px;">
+"Actions": [
+  "Microsoft.Resources/subscriptions/resourceGroups/*",
+  "Microsoft.ContainerService/managedClusters/*",
+  "Microsoft.ContainerService/managedClusters/agentPools/*",
+  "Microsoft.Network/virtualNetworks/*",
+  "Microsoft.Network/virtualNetworks/subnets/*",
+  "Microsoft.Network/networkSecurityGroups/*",
+  "Microsoft.Network/privateDnsZones/*",
+  "Microsoft.ManagedIdentity/userAssignedIdentities/*",
+  "Microsoft.ManagedIdentity/.../federatedIdentityCredentials/*",
+  "Microsoft.OperationalInsights/workspaces/*",
+  "Microsoft.Insights/dataCollectionRules/*",
+  "Microsoft.Insights/actionGroups/*",
+  "Microsoft.AlertsManagement/prometheusRuleGroups/*"
+]</pre>
+                </div>
+            </div>
+
+            <div class="risk-mitigation">
+                <h4>🎯 Permission Refinement Process</h4>
+                <ol>
+                    <li><strong>Current State Analysis:</strong> Audit actual SPN operations and permissions used</li>
+                    <li><strong>Gap Analysis:</strong> Compare proposed permissions against real usage patterns</li>
+                    <li><strong>Incremental Testing:</strong> Start with minimal permissions, add as needed during POC</li>
+                    <li><strong>Validation:</strong> Automated testing of all resource provisioning scenarios</li>
+                </ol>
+            </div>
+
+            <div class="question-box">
+                <h4>❓ Permission Discussion</h4>
+                <ul>
+                    <li>Are there additional Azure resource types that ASO needs to manage?</li>
+                    <li>What's your process for validating permission changes in production?</li>
+                    <li>How should we handle permission gaps discovered post-deployment?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 6: Implementation Plan -->
+        <div class="slide">
+            <h1>Implementation Roadmap & POC</h1>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <h4>📋 Phase 1: Analysis</h4>
+                    <ul style="text-align: left;">
+                        <li>Audit current SPN usage</li>
+                        <li>Map management group structure</li>
+                        <li>Document operational dependencies</li>
+                    </ul>
+                </div>
+                <div class="benefit-card">
+                    <h4>🧪 Phase 2: POC</h4>
+                    <ul style="text-align: left;">
+                        <li>Limited scope UAMI creation</li>
+                        <li>Cross-subscription test deployment</li>
+                        <li>Permission validation</li>
+                    </ul>
+                </div>
+                <div class="benefit-card">
+                    <h4>🚀 Phase 3: Production</h4>
+                    <ul style="text-align: left;">
+                        <li>Environment-by-environment rollout</li>
+                        <li>Gradual migration from SPN</li>
+                        <li>Monitoring and validation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="security-highlight">
+                <h4>🧪 POC Scope Definition</h4>
+                <div class="flow-diagram">
+                    <div class="flow-step" style="background: #e67e22;">Create POC UAMI</div>
+                    <div class="flow-step" style="background: #e67e22;">Deploy Test AKS</div>
+                    <div class="flow-step" style="background: #e67e22;">Create Network Resources</div>
+                    <div class="flow-step" style="background: #e67e22;">Validate Monitoring</div>
+                </div>
+                <p style="margin-top: 15px;"><strong>Target:</strong> Same environment, different subscription to validate cross-subscription access</p>
+            </div>
+
+            <div class="risk-mitigation">
+                <h4>⚠️ Risk Mitigation Strategy</h4>
+                <ul>
+                    <li><strong>Rollback Plan:</strong> Maintain current SPN during transition period</li>
+                    <li><strong>Backup UAMI:</strong> Secondary identity ready for immediate failover</li>
+                    <li><strong>Monitoring:</strong> Enhanced alerting for authentication failures</li>
+                    <li><strong>Validation:</strong> Automated testing before each phase</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7: Questions & Next Steps -->
+        <div class="slide">
+            <h1>Key Questions & Collaboration Points</h1>
+
+            <div class="question-box">
+                <h4>🎯 Immediate Questions for SRE Team</h4>
+                <div class="model-comparison">
+                    <div>
+                        <h5>Operational Impact</h5>
+                        <ul>
+                            <li>What current procedures would be affected by this change?</li>
+                            <li>How do you currently monitor SPN health and usage?</li>
+                            <li>What's your experience with Azure workload identity?</li>
+                            <li>How should we handle incident response for authentication failures?</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5>Implementation Requirements</h5>
+                        <ul>
+                            <li>What approval process is needed for management group RBAC changes?</li>
+                            <li>How long does it typically take to get these approvals?</li>
+                            <li>What monitoring/alerting should we implement for the new system?</li>
+                            <li>What are your requirements for the POC environment?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="security-highlight">
+                <h4>🤝 Proposed SRE Collaboration</h4>
+                <ul>
+                    <li><strong>Policy Review:</strong> SRE final approval on Gatekeeper policies before deployment</li>
+                    <li><strong>Monitoring Design:</strong> Collaborate on alerting and dashboards for new system</li>
+                    <li><strong>Runbook Development:</strong> Joint creation of operational procedures</li>
+                    <li><strong>POC Validation:</strong> SRE involvement in testing and validation phases</li>
+                </ul>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Next Steps (This Week)</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step" style="background: #27ae60;">Finalize POC Scope</div>
+                    <div class="flow-step" style="background: #27ae60;">Document Current State</div>
+                    <div class="flow-step" style="background: #27ae60;">Plan Approval Process</div>
+                    <div class="flow-step" style="background: #27ae60;">Start POC Setup</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <h3>Questions? Discussion? 🗣️</h3>
+                <p style="font-size: 1.1em; color: #7f8c8d;">Let's discuss your concerns and refine this approach together</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">7</span>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prev-btn" onclick="previousSlide()">← Previous</button>
+        <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 7;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n - 1].classList.add('active');
+
+            document.getElementById('current-slide').textContent = n;
+            document.getElementById('prev-btn').disabled = (n === 1);
+            document.getElementById('next-btn').disabled = (n === totalSlides);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(1);
+    </script>
+</body>
+</html>
