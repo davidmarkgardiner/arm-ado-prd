@@ -43,6 +43,27 @@ Our current ASO stack configuration provides granular control over cluster setti
 
 The critical factor is that existing deployments "look for ACR secrets." AKS Automatic's authentication changes could break current deployment pipelines. The operational benefits don't outweigh the risk of deployment failures.
 
+### Exception: Production Fallback Clusters with LTS
+
+**Consider AKS Automatic for static fallback clusters** that would use AKS Premium tier with Long-Term Support (LTS). These clusters would serve as:
+
+- **Static fallback positions** for traffic redirection during main cluster issues
+- **Verified stable environments** not subject to regular release processes
+- **Emergency capacity** with minimal operational overhead
+
+**Benefits for fallback clusters:**
+- ✅ LTS provides extended support lifecycle (up to 2 years)
+- ✅ No upgrade pressure from normal release cycles
+- ✅ Hardened security defaults suitable for production traffic
+- ✅ Automatic scaling handles traffic spikes during failover scenarios
+- ✅ Reduced operational burden for clusters used only during emergencies
+
+**Requirements:**
+- Premium tier for LTS access and enhanced SLA
+- Network configuration compatible with traffic redirection
+- Basic workload identity setup (no complex ACR secret dependencies)
+- Monitoring integration for failover detection
+
 ## Migration Considerations
 
 To move to AKS Automatic in the future:
@@ -55,3 +76,4 @@ To move to AKS Automatic in the future:
 
 - `aso-stack/cluster.yaml` - Current ASO cluster configuration
 - `aks-automatic/official.md` - AKS Automatic feature documentation
+
