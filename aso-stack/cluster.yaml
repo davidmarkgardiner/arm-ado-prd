@@ -130,10 +130,13 @@ spec:
     name: Base
     tier: Standard
   supportPlan: KubernetesOfficial
-  # Workload Auto Scaler with KEDA
+  # Workload Auto Scaler with KEDA and VPA
   workloadAutoScalerProfile:
     keda:
       enabled: true
+    verticalPodAutoscaler:
+      enabled: true
+      addonAutoscaling: enabled
   # OIDC Issuer - Required for workload identity
   oidcIssuerProfile:
     enabled: true
